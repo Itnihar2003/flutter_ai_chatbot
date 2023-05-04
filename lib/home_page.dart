@@ -1,4 +1,5 @@
 import 'package:avatar_glow/avatar_glow.dart';
+import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -10,10 +11,51 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  SpeechToText speechToText = SpeechToText();
-  var text = "hold the botton and start speaking";
-  bool islistening = false;
+  //Body of State()
 
+  //Audio Recogniation
+  bool islistening = false; //Status
+  SpeechToText speechToText = SpeechToText(); //
+  var recognizedText =
+      "hold the botton and start speaking"; //to store recognized audio
+
+  //Chat-GPT Implementation
+  String promptResponse = "";
+  late OpenAI? chatGPT;
+
+  //AIPrompt Function
+  Future getReply(String inputMessage) async {
+    final request = CompleteText(
+        prompt: inputMessage, model: Model.textDavinci3, maxTokens: 200);
+    final response = await chatGPT!.onCompletion(request: request);
+    setState(
+      () {
+        // print(response!.choices[0].text);
+        promptResponse = response!.choices[0].text;
+      },
+    );
+  }
+
+  //initState()
+  @override
+  void initState() {
+    chatGPT = OpenAI.instance.build(
+        token: "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",
+        baseOption:
+            HttpSetup(receiveTimeout: const Duration(milliseconds: 60000)));
+    super.initState();
+  }
+
+  //Dispose
+  @override
+  void dispose() {
+    // chatGPT?.close();
+    // chatGPT?.genImgClose();
+    chatGPT!.cancelAIGenerate();
+    super.dispose();
+  }
+
+  //Build method
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,12 +74,17 @@ class _HomePageState extends State<HomePage> {
         child: Padding(
           padding: const EdgeInsets.only(top: 38.0),
           child: Container(
-            alignment: Alignment.bottomCenter,
-            height: 600,
+            alignment: AlignmentDirectional.center,
+            height: 1000,
             width: 350,
             color: Colors.amberAccent,
             child: Center(
-              child: Text(text),
+              child: Column(
+                children: [
+                  Text(recognizedText),
+                  Text(promptResponse),
+                ],
+              ),
             ),
           ),
         ),
@@ -66,7 +113,8 @@ class _HomePageState extends State<HomePage> {
                             setState(
                               () {
                                 //recognized text from Audio
-                                text = result.recognizedWords;
+                                recognizedText = result.recognizedWords;
+                                getReply(recognizedText);
                               },
                             );
                           },
@@ -82,6 +130,7 @@ class _HomePageState extends State<HomePage> {
             setState(
               () {
                 islistening = false;
+                // getReply(recognizedText);
               },
             );
             speechToText.stop();
