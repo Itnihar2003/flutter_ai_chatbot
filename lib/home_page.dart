@@ -25,17 +25,13 @@ class _HomePageState extends State<HomePage> {
 
   //AIPrompt Function
   Future getReply(String inputMessage) async {
-    // final request =
-    //     ChatCompleteText(model: ChatModel.gpt_4_32k_0314, messages: [
-    //   Map.of({"role": "user", "content": inputMessage})
-    // ]);
-    final request =
-        CompleteText(prompt: inputMessage, model: Model.ada, maxTokens: 200);
+    final request = CompleteText(
+        prompt: inputMessage, model: Model.textDavinci3, maxTokens: 200);
     final response = await chatGPT!.onCompletion(request: request);
     setState(
       () {
-        print(response!.choices[0].text);
-        promptResponse = response.choices[0].text;
+        // print(response!.choices[0].text);
+        promptResponse = response!.choices[0].text;
       },
     );
   }
@@ -55,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     // chatGPT?.close();
     // chatGPT?.genImgClose();
-    chatGPT!..cancelAIGenerate();
+    chatGPT!.cancelAIGenerate();
     super.dispose();
   }
 
