@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> {
                           onResult: (result) {
                             setState(
                               () {
+                                //recognized text from Audio
                                 text = result.recognizedWords;
                               },
                             );
